@@ -23,4 +23,8 @@ function remove (id) {
   return destroy(`restaurants/${id}`)
 }
 
-export { getAll, getDetail, getRestaurantCategories, create, update, remove }
+function getDeatilSorted (id) {
+  return get(`restaurants/${id}/sorted`)
+}
+
+export { getAll, getDetail, getRestaurantCategories, create, update, remove, getDeatilSorted }

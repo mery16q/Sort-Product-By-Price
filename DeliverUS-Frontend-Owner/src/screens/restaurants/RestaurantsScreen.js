@@ -2,7 +2,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { StyleSheet, FlatList, Pressable, View } from 'react-native'
 
-import { getAll, remove } from '../../api/RestaurantEndpoints'
+import { getAll, remove, getDeatilSorted } from '../../api/RestaurantEndpoints'
 import ImageCard from '../../components/ImageCard'
 import TextSemiBold from '../../components/TextSemibold'
 import TextRegular from '../../components/TextRegular'
@@ -40,6 +40,8 @@ export default function RestaurantsScreen ({ navigation, route }) {
           <TextSemiBold>Avg. service time: <TextSemiBold textStyle={{ color: GlobalStyles.brandPrimary }}>{item.averageServiceMinutes} min.</TextSemiBold></TextSemiBold>
         }
         <TextSemiBold>Shipping: <TextSemiBold textStyle={{ color: GlobalStyles.brandPrimary }}>{item.shippingCosts.toFixed(2)}€</TextSemiBold></TextSemiBold>
+        <TextRegular textStyle={{ textAlign: 'right' }}>Currently sorting products<TextSemiBold> by {item.sortByPrice ? 'price' : 'default'}</TextSemiBold></TextRegular>
+
         <View style={styles.actionButtonsContainer}>
           <Pressable
             onPress={() => navigation.navigate('EditRestaurantScreen', { id: item.id })
@@ -74,6 +76,24 @@ export default function RestaurantsScreen ({ navigation, route }) {
             <MaterialCommunityIcons name='delete' color={'white'} size={20}/>
             <TextRegular textStyle={styles.text}>
               Delete
+            </TextRegular>
+          </View>
+        </Pressable>
+
+        <Pressable
+            onPress={() => { changeOrder(item) }}
+            style={({ pressed }) => [
+              {
+                backgroundColor: pressed
+                  ? GlobalStyles.brandPrimaryTap
+                  : GlobalStyles.brandPrimary
+              },
+              styles.actionButton
+            ]}>
+          <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+            <MaterialCommunityIcons name='delete' color={'white'} size={20}/>
+            <TextRegular textStyle={styles.text}>
+              {item.orderByPrice ? 'OrderBy: Default' : 'OrderBy: Price'}
             </TextRegular>
           </View>
         </Pressable>
@@ -123,6 +143,27 @@ export default function RestaurantsScreen ({ navigation, route }) {
     } catch (error) {
       showMessage({
         message: `There was an error while retrieving restaurants. ${error} `,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
+  }
+
+  const changeOrder = async (restaurant) => {
+    try {
+      await getDeatilSorted(restaurant.id)
+      await fetchRestaurants()
+      showMessage({
+        message: `Restaurant ${restaurant.name} succesfully change`,
+        type: 'success',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    } catch (error) {
+      console.log(error)
+      showMessage({
+        message: `Restaurant ${restaurant.name} could not be removed.`,
         type: 'error',
         style: GlobalStyles.flashStyle,
         titleStyle: GlobalStyles.flashTextStyle
@@ -195,7 +236,7 @@ const styles = StyleSheet.create({
     padding: 10,
     alignSelf: 'center',
     flexDirection: 'column',
-    width: '50%'
+    width: '33%'
   },
   actionButtonsContainer: {
     flexDirection: 'row',

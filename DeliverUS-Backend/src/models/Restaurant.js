@@ -59,6 +59,10 @@ const loadModel = (sequelize, DataTypes) => {
         'temporarily closed'
       ]
     },
+    orderByPrice: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     restaurantCategoryId: {
       allowNull: false,
       type: DataTypes.INTEGER

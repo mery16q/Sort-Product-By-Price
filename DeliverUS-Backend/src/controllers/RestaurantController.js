@@ -50,6 +50,11 @@ const create = async function (req, res) {
 const show = async function (req, res) {
   // Only returns PUBLIC information of restaurants
   try {
+    const rest = await Restaurant.findByPk(req.params.restaurantId)
+    const orderBy = rest.orderByPrice
+      ? [[{ model: Product, as: 'products' }, 'price', 'ASC']]
+      : [[{ model: Product, as: 'products' }, 'order', 'ASC']]
+
     const restaurant = await Restaurant.findByPk(req.params.restaurantId, {
       attributes: { exclude: ['userId'] },
       include: [{
@@ -61,9 +66,20 @@ const show = async function (req, res) {
         model: RestaurantCategory,
         as: 'restaurantCategory'
       }],
-      order: [[{ model: Product, as: 'products' }, 'order', 'ASC']]
+      order: orderBy
     }
     )
+    res.json(restaurant)
+  } catch (err) {
+    res.status(500).send(err)
+  }
+}
+
+const order = async function (req, res) {
+  try {
+    const restaurant = await Restaurant.findByPk(req.params.restaurantId)
+    restaurant.orderByPrice = !restaurant.orderByPrice
+    await restaurant.save()
     res.json(restaurant)
   } catch (err) {
     res.status(500).send(err)
@@ -100,6 +116,7 @@ const RestaurantController = {
   indexOwner,
   create,
   show,
+  order,
   update,
   destroy
 }
